@@ -3,6 +3,7 @@ using machine_breakdown_tracker.Context;
 using machine_breakdown_tracker.Models;
 using Npgsql;
 using System.Data;
+using System.Data.Common;
 using System.Reflection.PortableExecutable;
 using Machine = machine_breakdown_tracker.Models.Machine;
 
@@ -19,7 +20,12 @@ namespace machine_breakdown_tracker.Services
             _connection = _context.CreateConnection();
         }
 
-        public async Task<IEnumerable<Machine>> GetAllMachines() => await _connection.QueryAsync<Machine>("SELECT * FROM machine");
+        public async Task<IEnumerable<Machine>> GetAllMachines() 
+            => await _connection.QueryAsync<Machine, Breakdown, Machine>("SELECT m.*, b.* FROM machine m LEFT JOIN breakdown b ON m.name = b.machine", (machine, breakdown) => {
+            machine.Breakdowns = machine.Breakdowns ?? new List<Breakdown>();
+            machine.Breakdowns.Add(breakdown);
+            return machine;
+        }, splitOn: "name");
 
         public async Task<bool> AddMachine(Machine machine)
         {

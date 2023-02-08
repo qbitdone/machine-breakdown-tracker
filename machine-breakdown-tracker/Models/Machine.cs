@@ -3,5 +3,6 @@
     public class Machine
     {
         public string Name { get; set; }
+        public List<Breakdown> Breakdowns { get; set; }
     }
 }
