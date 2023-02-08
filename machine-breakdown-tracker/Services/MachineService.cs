@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using machine_breakdown_tracker.Context;
 using machine_breakdown_tracker.Models;
 using Npgsql;
 
@@ -6,16 +7,16 @@ namespace machine_breakdown_tracker.Services
 {
     public class MachineService : IMachineService
     {
-        private readonly IConfiguration configuration;
+        private readonly DapperContext _context;
 
-        public MachineService(IConfiguration configuration)
+        public MachineService(DapperContext context)
         {
-            this.configuration = configuration;
+            _context = context;
         }
 
         public async Task<IEnumerable<Machine>> GetAllMachines()
         {
-            using (var connection = new NpgsqlConnection(configuration.GetConnectionString("DefaultConnectionString")))
+            using (var connection = _context.CreateConnection())
             {
                 return await connection.QueryAsync<Machine>("SELECT * FROM machine");
             }

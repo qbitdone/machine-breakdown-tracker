@@ -1,3 +1,4 @@
+using machine_breakdown_tracker.Context;
 using machine_breakdown_tracker.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped <IMachineService, MachineService>();
+builder.Services.AddSingleton<DapperContext>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
