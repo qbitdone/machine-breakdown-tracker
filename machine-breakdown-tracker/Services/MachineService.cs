@@ -28,19 +28,29 @@ namespace machine_breakdown_tracker.Services
                 return false;
             }
 
-            var sql = "INSERT INTO machine (name) VALUES (@Name)";
-            await _connection.ExecuteAsync(sql, new { machine.Name });
+            await _connection.ExecuteAsync("INSERT INTO machine (name) VALUES (@Name)", new { machine.Name });
             return true;
         }
 
         public async Task<bool> DoesMachineNameExist(Machine machine)
         {
-            var existingMachine = await _connection.QueryFirstOrDefaultAsync<Machine>("SELECT * FROM machine WHERE name = @Name", new { machine.Name });
-            if (existingMachine != null)
+            if (await _connection.QueryFirstOrDefaultAsync<Machine>("SELECT * FROM machine WHERE name = @Name", new { machine.Name }) != null)
             {
                 return false;
             }
             return true;
+        }
+
+        public async Task<bool> DeleteMachineByName(string machineName)
+        {
+            if (string.IsNullOrEmpty(machineName) || machineName.Length > 100)
+            {
+                return false;
+            }
+
+            var rowsAffected = await _connection.ExecuteAsync("DELETE FROM machine WHERE name = @Name", new { Name = machineName });
+
+            return rowsAffected > 0;
         }
 
     }

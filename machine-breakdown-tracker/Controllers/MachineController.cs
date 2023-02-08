@@ -1,6 +1,8 @@
 ﻿using machine_breakdown_tracker.Models;
 using machine_breakdown_tracker.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using System.Xml.Linq;
 using Machine = machine_breakdown_tracker.Models.Machine;
 
@@ -34,6 +36,16 @@ namespace machine_breakdown_tracker.Controllers
             {
                 return BadRequest("Invalid machine name");
             }
+        }
+
+        [HttpDelete("{machineName}")]
+        public async Task<ActionResult> DeleteMovieById(string machineName)
+        {
+            if (!await _machineService.DeleteMachineByName(machineName))
+            {
+                return NotFound($"Machine with name: {machineName} does not exists");
+            }
+            return Ok($"You have successfully deleted machine with name: {machineName}");
         }
     }
 }
