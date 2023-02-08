@@ -29,6 +29,7 @@ namespace machine_breakdown_tracker.Services
             }
 
             await _connection.ExecuteAsync("INSERT INTO machine (name) VALUES (@Name)", new { machine.Name });
+
             return true;
         }
 
@@ -53,5 +54,16 @@ namespace machine_breakdown_tracker.Services
             return rowsAffected > 0;
         }
 
+        public async Task<bool> UpdateMachineByName(string machineName, Machine updatedMachine)
+        {
+            if (string.IsNullOrEmpty(machineName) || machineName.Length > 100)
+            {
+                return false;
+            }
+
+            var rowsAffected = await _connection.ExecuteAsync("UPDATE machine SET name = @Name WHERE name = @OriginalName", new { Name = updatedMachine.Name, OriginalName = machineName });
+
+            return rowsAffected > 0;
+        }
     }
 }

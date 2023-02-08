@@ -47,5 +47,21 @@ namespace machine_breakdown_tracker.Controllers
             }
             return Ok($"You have successfully deleted machine with name: {machineName}");
         }
+
+        [HttpPut("{machineName}")]
+        public async Task<IActionResult> UpdateMachineByName(string machineName, [FromBody] Machine machine)
+        {
+            if (string.IsNullOrEmpty(machineName) || machineName.Length > 100 || machineName == null)
+            {
+                return BadRequest("Invalid machine name");
+            }
+
+            if (!await _machineService.UpdateMachineByName(machineName, machine))
+            {
+                return NotFound("Machine with provided name does not exist");
+            }
+
+            return Ok("Machine updated successfully");
+        }
     }
 }

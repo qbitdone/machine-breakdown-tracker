@@ -8,5 +8,6 @@ namespace machine_breakdown_tracker.Services
         Task<bool> AddMachine(Machine machine);
         Task<bool> DoesMachineNameExist(Machine machine);
         Task<bool> DeleteMachineByName(string machineName);
+        Task<bool> UpdateMachineByName(string machineName, Machine updatedMachine);
     }
 }
