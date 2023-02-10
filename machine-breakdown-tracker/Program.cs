@@ -10,6 +10,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped <IMachineService, MachineService>();
+builder.Services.AddScoped <IBreakdownService, BreakdownService>();
 builder.Services.AddSingleton<DapperContext>();
 
 var app = builder.Build();
