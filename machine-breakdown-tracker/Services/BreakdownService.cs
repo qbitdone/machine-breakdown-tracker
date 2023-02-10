@@ -17,5 +17,21 @@ namespace machine_breakdown_tracker.Services
         }
         public async Task<IEnumerable<Breakdown>> GetAllBreakdowns() => await _connection.QueryAsync<Breakdown>("SELECT * FROM breakdown");
 
+        public async Task<bool> AddBreakdown(BreakdownRequest breakdown)
+        {
+            if (string.IsNullOrEmpty(breakdown.Name) || breakdown.Name.Length > 100 ||
+                string.IsNullOrEmpty(breakdown.Machine) || breakdown.Machine.Length > 100 ||
+                string.IsNullOrEmpty(breakdown.Description) || breakdown.Description.Length > 1000 ||
+                breakdown.StartTime == null || breakdown.EndTime == null)
+            {
+                return false;
+            }
+
+            await _connection.ExecuteAsync("INSERT INTO breakdown (name, machine, priority, start_time, end_time, description, eliminated) " +
+                                           "VALUES (@Name, @Machine, @Priority, @StartTime, @EndTime, @Description, @Eliminated)",
+                                           breakdown);
+
+            return true;
+        }
     }
 }

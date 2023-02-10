@@ -17,5 +17,18 @@ namespace machine_breakdown_tracker.Controllers
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Machine>>> GetAllMachines() => Ok(await _breakdownService.GetAllBreakdowns());
+
+        [HttpPost]
+        public async Task<ActionResult<bool>> AddBreakdown([FromBody] BreakdownRequest breakdown)
+        {
+            if (!await _breakdownService.AddBreakdown(breakdown))
+            {
+                return BadRequest("Failed to add breakdown. One or more required fields are missing or have invalid values.");
+            }
+            else
+            {
+                return Ok("You have successfully added new breakdown!");
+            }
+        }
     }
 }
