@@ -22,9 +22,9 @@ namespace machine_breakdown_tracker.Services
 
         public async Task<IEnumerable<Machine>> GetAllMachines()
         {
-            var machinesAndBreakdowns = await _connection.QueryAsync<Machine, Breakdown, Machine>(
-                "SELECT m.*, b.* FROM machine m LEFT JOIN breakdown b ON m.name = b.machine",
-                (machine, breakdown) =>
+            var sql = "SELECT m.*, b.* FROM machine m LEFT JOIN breakdown b ON m.name = b.machine";
+
+            var machinesAndBreakdowns = await _connection.QueryAsync<Machine, Breakdown, Machine>(sql, (machine, breakdown) =>
                 {
                     machine.Breakdowns = machine.Breakdowns ?? new List<Breakdown>();
                     machine.Breakdowns.Add(breakdown);
@@ -51,49 +51,25 @@ namespace machine_breakdown_tracker.Services
         }
 
 
-        public async Task<bool> AddMachine(Machine machine)
+        public async Task AddMachine(Machine machine)
         {
-            if (string.IsNullOrEmpty(machine.Name) || machine.Name.Length > 100)
+            if (string.IsNullOrWhiteSpace(machine.Name))
             {
-                return false;
+                throw new ArgumentException("Name cannot be null or empty");
             }
 
             await _connection.ExecuteAsync("INSERT INTO machine (name) VALUES (@Name)", new { machine.Name });
-
-            return true;
         }
+        public async Task<bool> DeleteMachineByName(string machineName) => await _connection.ExecuteAsync("DELETE FROM machine WHERE name = @Name", new { Name = machineName }) > 0;
 
-        public async Task<bool> DoesMachineNameExist(Machine machine)
+        public async Task<bool> UpdateMachineByName(string machineName, Machine updatedMachine) => await _connection.ExecuteAsync("UPDATE machine SET name = @Name WHERE name = @OriginalName", new { Name = updatedMachine.Name, OriginalName = machineName }) > 0;
+
+        public async Task<bool> DoesMachineNameExist(string machineName) => await _connection.QueryFirstOrDefaultAsync("SELECT * FROM machine WHERE name = @Name", new { Name = machineName }) > 0;
+
+
+        public Task<bool> DoesMachineNameExist(Machine machine)
         {
-            if (await _connection.QueryFirstOrDefaultAsync<Machine>("SELECT * FROM machine WHERE name = @Name", new { machine.Name }) != null)
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public async Task<bool> DeleteMachineByName(string machineName)
-        {
-            if (string.IsNullOrEmpty(machineName) || machineName.Length > 100)
-            {
-                return false;
-            }
-
-            var rowsAffected = await _connection.ExecuteAsync("DELETE FROM machine WHERE name = @Name", new { Name = machineName });
-
-            return rowsAffected > 0;
-        }
-
-        public async Task<bool> UpdateMachineByName(string machineName, Machine updatedMachine)
-        {
-            if (string.IsNullOrEmpty(machineName) || machineName.Length > 100)
-            {
-                return false;
-            }
-
-            var rowsAffected = await _connection.ExecuteAsync("UPDATE machine SET name = @Name WHERE name = @OriginalName", new { Name = updatedMachine.Name, OriginalName = machineName });
-
-            return rowsAffected > 0;
+            throw new NotImplementedException();
         }
     }
 }

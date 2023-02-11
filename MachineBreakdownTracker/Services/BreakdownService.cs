@@ -17,31 +17,27 @@ namespace machine_breakdown_tracker.Services
         }
         public async Task<IEnumerable<Breakdown>> GetAllBreakdowns() => await _connection.QueryAsync<Breakdown>("SELECT * FROM breakdown");
 
-        public async Task<bool> AddBreakdown(BreakdownRequest breakdown)
+        public async Task AddBreakdown(BreakdownRequest breakdown)
         {
             if (!await IsValidPriority(breakdown.Priority))
             {
                 throw new ArgumentException("Invalid priority value");
             }
 
-            if (breakdown.Description == null || string.IsNullOrEmpty(breakdown.Description))
+            if (string.IsNullOrWhiteSpace(breakdown.Description))
             {
-                throw new ArgumentException("Description cannot be null or empty.");
+                throw new ArgumentException("Description cannot be null or empty");
             }
 
             if (await DoesMachineHaveBreakdown(breakdown.Machine))
             {
-                if (await DoesMachineHaveBreakdown(breakdown.Machine))
-                {
-                    throw new InvalidOperationException("A breakdown is already associated with this machine.");
-                }
+                throw new InvalidOperationException("A breakdown is already associated with this machine");
             }
 
-            await _connection.ExecuteAsync("INSERT INTO breakdown (name, machine, priority, start_time, end_time, description, eliminated) " +
-                                           "VALUES (@Name, @Machine, @Priority, @StartTime, @EndTime, @Description, @Eliminated)",
-                                           breakdown);
+            var sql = "INSERT INTO breakdown (name, machine, priority, start_time, end_time, description, eliminated) " +
+                      "VALUES (@Name, @Machine, @Priority, @StartTime, @EndTime, @Description, @Eliminated)";
 
-            return true;
+            await _connection.ExecuteAsync(sql, breakdown);
         }
 
         public async Task<bool> UpdateBreakdownById(Guid breakdownId, BreakdownRequest updatedBreakdown)
@@ -69,9 +65,11 @@ namespace machine_breakdown_tracker.Services
                 }
             }
 
-            var rowsAffected = await _connection.ExecuteAsync(@"UPDATE breakdown SET name = @Name, machine = @Machine, priority = @Priority, 
-                start_time = @StartTime, end_time = @EndTime, description = @Description, 
-                eliminated = @Eliminated WHERE id = @BreakdownId", new
+            var sql = @"UPDATE breakdown SET name = @Name, machine = @Machine, priority = @Priority, 
+                       start_time = @StartTime, end_time = @EndTime, description = @Description, 
+                       eliminated = @Eliminated WHERE id = @BreakdownId";
+
+            var rowsAffected = await _connection.ExecuteAsync(sql, new
             {
                 Name = updatedBreakdown.Name,
                 Machine = updatedBreakdown.Machine,
@@ -92,33 +90,19 @@ namespace machine_breakdown_tracker.Services
         {
             if (await GetBreakdownById(breakdownId) != default(Breakdown))
             {
-                var rowsAffected = await _connection.ExecuteAsync("DELETE FROM breakdown WHERE id = @BreakdownId", new { BreakdownId = breakdownId });
-
-                return rowsAffected > 0;
+                return await _connection.ExecuteAsync("DELETE FROM breakdown WHERE id = @BreakdownId", new { BreakdownId = breakdownId }) > 0;
             }
 
             return false;
         }
 
-        public async Task<bool> UpdateBreakdownEliminationStatusById(Guid breakdownId, bool eliminated)
-        {
-            var rowsAffected = await _connection.ExecuteAsync(@"UPDATE breakdown SET eliminated = @Eliminated WHERE id = @BreakdownId", new
-            {
-                Eliminated = eliminated,
-                BreakdownId = breakdownId
-            });
+        public async Task<bool> UpdateBreakdownEliminationStatusById(Guid breakdownId, bool eliminated) => await _connection.ExecuteAsync(@"UPDATE breakdown SET eliminated = @Eliminated WHERE id = @BreakdownId", new { Eliminated = eliminated, BreakdownId = breakdownId }) > 0;
 
-            return rowsAffected > 0;
-        }
-
-        public async Task<bool> IsValidPriority(string breakdownPriority)
-        {
-            return breakdownPriority == "nizak" || breakdownPriority == "srednji" || breakdownPriority == "visok";
-        }
+        public async Task<bool> IsValidPriority(string breakdownPriority) => breakdownPriority == "nizak" || breakdownPriority == "srednji" || breakdownPriority == "visok";
 
         public async Task<IEnumerable<Breakdown>> GetPaginatedSortedBreakdowns(int limit, int offset)
         {
-            var query = @"SELECT * FROM breakdown
+            var sql = @"SELECT * FROM breakdown
                           ORDER BY
                             CASE
                                 WHEN priority = 'nizak' THEN 1
@@ -129,14 +113,9 @@ namespace machine_breakdown_tracker.Services
                           LIMIT @Limit
                           OFFSET @Offset";
 
-            return await _connection.QueryAsync<Breakdown>(query, new { Limit = limit, Offset = offset });
+            return await _connection.QueryAsync<Breakdown>(sql, new { Limit = limit, Offset = offset });
         }
 
-        public async Task<bool> DoesMachineHaveBreakdown(string machineName)
-        {
-            var result = await _connection.QueryFirstOrDefaultAsync<int>(@"SELECT COUNT(*) FROM breakdown WHERE machine = @MachineName", new { MachineName = machineName });
-
-            return result > 0;
-        }
+        public async Task<bool> DoesMachineHaveBreakdown(string machineName) => await _connection.QueryFirstOrDefaultAsync(@"SELECT COUNT(*) FROM breakdown WHERE machine = @MachineName", new { MachineName = machineName }) > 0;
     }
 }

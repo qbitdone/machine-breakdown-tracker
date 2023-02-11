@@ -28,14 +28,10 @@ namespace machine_breakdown_tracker.Controllers
             {
                 return BadRequest("A Machine with that name already exists");
             }
-            if (await _machineService.AddMachine(machine))
-            {
-                return Ok("You have successfully added new Machine!");
-            }
-            else
-            {
-                return BadRequest("Invalid machine name");
-            }
+
+            await _machineService.AddMachine(machine);
+            return Ok();
+
         }
 
         [HttpDelete("{machineName}")]

@@ -19,16 +19,13 @@ namespace machine_breakdown_tracker.Controllers
         public async Task<ActionResult<IEnumerable<Machine>>> GetAllMachines() => Ok(await _breakdownService.GetAllBreakdowns());
 
         [HttpPost]
-        public async Task<ActionResult<bool>> AddBreakdown([FromBody] BreakdownRequest breakdown)
+        public async Task<IActionResult> AddBreakdown([FromBody] BreakdownRequest breakdown)
         {
             try
             {
-                if (await _breakdownService.AddBreakdown(breakdown))
-                {
-                    return Created("api/breakdown", breakdown);
-                }
+                await _breakdownService.AddBreakdown(breakdown);
 
-                return NoContent();
+                return Created("api/breakdown", breakdown);
             }
 
             catch (ArgumentException ex)
@@ -40,6 +37,7 @@ namespace machine_breakdown_tracker.Controllers
             {
                 return BadRequest(ex.Message);
             }
+
         }
 
 
@@ -50,7 +48,7 @@ namespace machine_breakdown_tracker.Controllers
             {
                 if (await _breakdownService.UpdateBreakdownById(breakdownId, updatedBreakdown))
                 {
-                    return Ok("Breakdown updated successfully");
+                    return NoContent();
                 }
 
                 else
@@ -71,13 +69,13 @@ namespace machine_breakdown_tracker.Controllers
         }
 
         [HttpDelete("{breakdownId}")]
-        public async Task<ActionResult> DeleteBreakdownById(Guid breakdownId)
+        public async Task<IActionResult> DeleteBreakdownById(Guid breakdownId)
         {
-            if (!await _breakdownService.DeleteBreakdownById(breakdownId))
+            if (await _breakdownService.DeleteBreakdownById(breakdownId))
             {
-                return NotFound("Breakdown with provided id does not exist");
+                return NoContent();
             }
-            return Ok($"You have successfully deleted breakdown with id: {breakdownId}");
+            return NotFound("Breakdown with provided id does not exist");
         }
 
         [HttpPut("{breakdownId}/status")]

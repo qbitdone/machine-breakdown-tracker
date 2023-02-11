@@ -6,7 +6,7 @@ namespace machine_breakdown_tracker.Services
     {
         Task<IEnumerable<Breakdown>> GetAllBreakdowns();
         Task<Breakdown> GetBreakdownById(Guid breakdownId);
-        Task<bool> AddBreakdown(BreakdownRequest breakdown);
+        Task AddBreakdown(BreakdownRequest breakdown);
         Task<bool> UpdateBreakdownById(Guid breakdownId, BreakdownRequest breakdown);
         Task<bool> DeleteBreakdownById(Guid breakdownId);
         Task<bool> UpdateBreakdownEliminationStatusById(Guid breakdownId, bool eliminated);
