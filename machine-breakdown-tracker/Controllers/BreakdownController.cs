@@ -75,5 +75,8 @@ namespace machine_breakdown_tracker.Controllers
                 return BadRequest();
             }
         }
+
+        [HttpGet("breakdowns")]
+        public async Task<ActionResult<List<Breakdown>>> GetBreakdowns(int limit, int offset) => await _breakdownService.GetPaginatedSortedBreakdowns(limit, offset);
     }
 }

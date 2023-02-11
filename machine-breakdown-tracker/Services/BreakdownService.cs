@@ -95,5 +95,22 @@ namespace machine_breakdown_tracker.Services
             return breakdownPriority == "nizak" || breakdownPriority == "srednji" || breakdownPriority == "visok";
         }
 
+        public async Task<List<Breakdown>> GetPaginatedSortedBreakdowns(int limit, int offset)
+        {
+            var query = @"SELECT * FROM breakdown
+                          ORDER BY
+                            CASE
+                                WHEN priority = 'nizak' THEN 1
+                                WHEN priority = 'srednji' THEN 2
+                                WHEN priority = 'visok' THEN 3
+                                ELSE 4
+                            END, start_time DESC
+                          LIMIT @Limit
+                          OFFSET @Offset";
+
+            var breakdowns = await _connection.QueryAsync<Breakdown>(query, new { Limit = limit, Offset = offset });
+
+            return breakdowns.ToList();
+        }
     }
 }
