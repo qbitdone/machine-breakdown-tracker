@@ -21,13 +21,13 @@ namespace machine_breakdown_tracker.Controllers
         [HttpPost]
         public async Task<ActionResult<bool>> AddBreakdown([FromBody] BreakdownRequest breakdown)
         {
-            if (!await _breakdownService.AddBreakdown(breakdown))
+            if (await _breakdownService.AddBreakdown(breakdown))
             {
-                return BadRequest("Failed to add breakdown. One or more required fields are missing or have invalid values.");
+                return Ok("You have successfully added new breakdown!");
             }
             else
             {
-                return Ok("You have successfully added new breakdown!");
+                return BadRequest("Failed to add breakdown. One or more required fields are missing or have invalid values.");
             }
         }
     }
