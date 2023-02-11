@@ -30,5 +30,16 @@ namespace machine_breakdown_tracker.Controllers
                 return BadRequest("Failed to add breakdown. One or more required fields are missing or have invalid values.");
             }
         }
+
+        [HttpPut("{breakdownId}")]
+        public async Task<IActionResult> UpdateBreakdownById(Guid breakdownId, [FromBody] BreakdownRequest updatedBreakdown)
+        {
+            if (!await _breakdownService.UpdateBreakdownById(breakdownId, updatedBreakdown))
+            {
+                return NotFound("Breakdown with provided id does not exist");
+            }
+
+            return Ok("Breakdown updated successfully");
+        }
     }
 }

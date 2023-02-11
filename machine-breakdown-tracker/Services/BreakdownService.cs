@@ -22,7 +22,7 @@ namespace machine_breakdown_tracker.Services
             if (string.IsNullOrEmpty(breakdown.Name) || breakdown.Name.Length > 100 ||
                 string.IsNullOrEmpty(breakdown.Machine) || breakdown.Machine.Length > 100 ||
                 string.IsNullOrEmpty(breakdown.Description) || breakdown.Description.Length > 1000 ||
-                breakdown.StartTime == null || breakdown.EndTime == null)
+                breakdown.StartTime == null)
             {
                 return false;
             }
@@ -33,5 +33,36 @@ namespace machine_breakdown_tracker.Services
 
             return true;
         }
+
+        public async Task<bool> UpdateBreakdownById(Guid breakdownId, BreakdownRequest updatedBreakdown)
+        {
+            var breakdown = await GetBreakdownById(breakdownId);
+
+            if (breakdown != default(Breakdown))
+            {
+
+                var rowsAffected = await _connection.ExecuteAsync(@"UPDATE breakdown SET name = @Name, machine = @Machine, priority = @Priority, 
+                start_time = @StartTime, end_time = @EndTime, description = @Description, 
+                eliminated = @Eliminated WHERE id = @BreakdownId", new
+                {
+                    Name = updatedBreakdown.Name,
+                    Machine = updatedBreakdown.Machine,
+                    Priority = updatedBreakdown.Priority,
+                    StartTime = updatedBreakdown.StartTime,
+                    EndTime = updatedBreakdown.EndTime,
+                    Description = updatedBreakdown.Description,
+                    Eliminated = updatedBreakdown.Eliminated,
+                    BreakdownId = breakdownId
+                });
+
+                return rowsAffected > 0;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<Breakdown> GetBreakdownById(Guid breakdownId) => await _connection.QueryFirstOrDefaultAsync<Breakdown>("SELECT * FROM breakdown WHERE id = @BreakdownId", new { BreakdownId = breakdownId });
     }
 }
