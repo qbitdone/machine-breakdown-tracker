@@ -9,6 +9,7 @@ namespace machine_breakdown_tracker.Services
         Task<bool> AddBreakdown(BreakdownRequest breakdown);
         Task<bool> UpdateBreakdownById(Guid breakdownId, BreakdownRequest breakdown);
         Task<bool> DeleteBreakdownById(Guid breakdownId);
-
+        Task<bool> UpdateBreakdownEliminationStatusById(Guid breakdownId, bool eliminated);
+        Task<bool> IsValidPriority(string breakdownPriority);
     }
 }

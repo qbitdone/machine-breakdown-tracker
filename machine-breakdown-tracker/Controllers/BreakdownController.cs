@@ -34,12 +34,23 @@ namespace machine_breakdown_tracker.Controllers
         [HttpPut("{breakdownId}")]
         public async Task<IActionResult> UpdateBreakdownById(Guid breakdownId, [FromBody] BreakdownRequest updatedBreakdown)
         {
-            if (!await _breakdownService.UpdateBreakdownById(breakdownId, updatedBreakdown))
+            try
             {
-                return NotFound("Breakdown with provided id does not exist");
+                if (await _breakdownService.UpdateBreakdownById(breakdownId, updatedBreakdown))
+                {
+                    return Ok("Breakdown updated successfully");
+                }
+
+                else
+                {
+                    return NotFound("No breakdown found with the provided ID");
+                }
             }
 
-            return Ok("Breakdown updated successfully");
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("{breakdownId}")]
@@ -50,6 +61,19 @@ namespace machine_breakdown_tracker.Controllers
                 return NotFound("Breakdown with provided id does not exist");
             }
             return Ok($"You have successfully deleted breakdown with id: {breakdownId}");
+        }
+
+        [HttpPut("{breakdownId}/status")]
+        public async Task<IActionResult> UpdateBreakdownEliminationStatus(Guid breakdownId, [FromBody] bool eliminated)
+        {
+            if (await _breakdownService.UpdateBreakdownEliminationStatusById(breakdownId, eliminated))
+            {
+                return Ok("You have sucesfully updated eliminated status of breakdown");
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
     }
 }

@@ -36,30 +36,33 @@ namespace machine_breakdown_tracker.Services
 
         public async Task<bool> UpdateBreakdownById(Guid breakdownId, BreakdownRequest updatedBreakdown)
         {
+            if (!await IsValidPriority(updatedBreakdown.Priority))
+            {
+                throw new ArgumentException("Invalid priority value");
+            }
+
             var breakdown = await GetBreakdownById(breakdownId);
 
-            if (breakdown != default(Breakdown))
-            {
-                var rowsAffected = await _connection.ExecuteAsync(@"UPDATE breakdown SET name = @Name, machine = @Machine, priority = @Priority, 
-                start_time = @StartTime, end_time = @EndTime, description = @Description, 
-                eliminated = @Eliminated WHERE id = @BreakdownId", new
-                {
-                    Name = updatedBreakdown.Name,
-                    Machine = updatedBreakdown.Machine,
-                    Priority = updatedBreakdown.Priority,
-                    StartTime = updatedBreakdown.StartTime,
-                    EndTime = updatedBreakdown.EndTime,
-                    Description = updatedBreakdown.Description,
-                    Eliminated = updatedBreakdown.Eliminated,
-                    BreakdownId = breakdownId
-                });
-
-                return rowsAffected > 0;
-            }
-            else
+            if (await GetBreakdownById(breakdownId) == default(Breakdown))
             {
                 return false;
             }
+
+            var rowsAffected = await _connection.ExecuteAsync(@"UPDATE breakdown SET name = @Name, machine = @Machine, priority = @Priority, 
+                start_time = @StartTime, end_time = @EndTime, description = @Description, 
+                eliminated = @Eliminated WHERE id = @BreakdownId", new
+            {
+                Name = updatedBreakdown.Name,
+                Machine = updatedBreakdown.Machine,
+                Priority = updatedBreakdown.Priority,
+                StartTime = updatedBreakdown.StartTime,
+                EndTime = updatedBreakdown.EndTime,
+                Description = updatedBreakdown.Description,
+                Eliminated = updatedBreakdown.Eliminated,
+                BreakdownId = breakdownId
+            });
+
+            return rowsAffected > 0;
         }
 
         public async Task<Breakdown> GetBreakdownById(Guid breakdownId) => await _connection.QueryFirstOrDefaultAsync<Breakdown>("SELECT * FROM breakdown WHERE id = @BreakdownId", new { BreakdownId = breakdownId });
@@ -68,12 +71,29 @@ namespace machine_breakdown_tracker.Services
         {
             if (await GetBreakdownById(breakdownId) != default(Breakdown))
             {
-               var rowsAffected = await _connection.ExecuteAsync("DELETE FROM breakdown WHERE id = @BreakdownId", new { BreakdownId = breakdownId });
+                var rowsAffected = await _connection.ExecuteAsync("DELETE FROM breakdown WHERE id = @BreakdownId", new { BreakdownId = breakdownId });
 
-               return rowsAffected > 0;
+                return rowsAffected > 0;
             }
 
             return false;
         }
+
+        public async Task<bool> UpdateBreakdownEliminationStatusById(Guid breakdownId, bool eliminated)
+        {
+            var rowsAffected = await _connection.ExecuteAsync(@"UPDATE breakdown SET eliminated = @Eliminated WHERE id = @BreakdownId", new
+            {
+                Eliminated = eliminated,
+                BreakdownId = breakdownId
+            });
+
+            return rowsAffected > 0;
+        }
+
+        public async Task<bool> IsValidPriority(string breakdownPriority)
+        {
+            return breakdownPriority == "nizak" || breakdownPriority == "srednji" || breakdownPriority == "visok";
+        }
+
     }
 }
