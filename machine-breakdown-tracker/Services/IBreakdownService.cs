@@ -11,6 +11,6 @@ namespace machine_breakdown_tracker.Services
         Task<bool> DeleteBreakdownById(Guid breakdownId);
         Task<bool> UpdateBreakdownEliminationStatusById(Guid breakdownId, bool eliminated);
         Task<bool> IsValidPriority(string breakdownPriority);
-        Task<List<Breakdown>> GetPaginatedSortedBreakdowns(int limit, int offset);
+        Task<IEnumerable<Breakdown>> GetPaginatedSortedBreakdowns(int limit, int offset);
     }
 }

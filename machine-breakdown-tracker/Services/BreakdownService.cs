@@ -19,12 +19,22 @@ namespace machine_breakdown_tracker.Services
 
         public async Task<bool> AddBreakdown(BreakdownRequest breakdown)
         {
-            if (string.IsNullOrEmpty(breakdown.Name) || breakdown.Name.Length > 100 ||
-                string.IsNullOrEmpty(breakdown.Machine) || breakdown.Machine.Length > 100 ||
-                string.IsNullOrEmpty(breakdown.Description) || breakdown.Description.Length > 1000 ||
-                breakdown.StartTime == null)
+            if (!await IsValidPriority(breakdown.Priority))
             {
-                return false;
+                throw new ArgumentException("Invalid priority value");
+            }
+
+            if (breakdown.Description == null || string.IsNullOrEmpty(breakdown.Description))
+            {
+                throw new ArgumentException("Description cannot be null or empty.");
+            }
+
+            if (await DoesMachineHaveBreakdown(breakdown.Machine))
+            {
+                if (await DoesMachineHaveBreakdown(breakdown.Machine))
+                {
+                    throw new InvalidOperationException("A breakdown is already associated with this machine.");
+                }
             }
 
             await _connection.ExecuteAsync("INSERT INTO breakdown (name, machine, priority, start_time, end_time, description, eliminated) " +
@@ -41,11 +51,22 @@ namespace machine_breakdown_tracker.Services
                 throw new ArgumentException("Invalid priority value");
             }
 
-            var breakdown = await GetBreakdownById(breakdownId);
+            if (updatedBreakdown.Description == null || string.IsNullOrEmpty(updatedBreakdown.Description))
+            {
+                throw new ArgumentException("Description cannot be null or empty.");
+            }
 
             if (await GetBreakdownById(breakdownId) == default(Breakdown))
             {
                 return false;
+            }
+
+            if (await DoesMachineHaveBreakdown(updatedBreakdown.Machine))
+            {
+                if (await DoesMachineHaveBreakdown(updatedBreakdown.Machine))
+                {
+                    throw new InvalidOperationException("A breakdown is already associated with this machine.");
+                }
             }
 
             var rowsAffected = await _connection.ExecuteAsync(@"UPDATE breakdown SET name = @Name, machine = @Machine, priority = @Priority, 
@@ -95,7 +116,7 @@ namespace machine_breakdown_tracker.Services
             return breakdownPriority == "nizak" || breakdownPriority == "srednji" || breakdownPriority == "visok";
         }
 
-        public async Task<List<Breakdown>> GetPaginatedSortedBreakdowns(int limit, int offset)
+        public async Task<IEnumerable<Breakdown>> GetPaginatedSortedBreakdowns(int limit, int offset)
         {
             var query = @"SELECT * FROM breakdown
                           ORDER BY
@@ -108,9 +129,14 @@ namespace machine_breakdown_tracker.Services
                           LIMIT @Limit
                           OFFSET @Offset";
 
-            var breakdowns = await _connection.QueryAsync<Breakdown>(query, new { Limit = limit, Offset = offset });
+            return await _connection.QueryAsync<Breakdown>(query, new { Limit = limit, Offset = offset });
+        }
 
-            return breakdowns.ToList();
+        public async Task<bool> DoesMachineHaveBreakdown(string machineName)
+        {
+            var result = await _connection.QueryFirstOrDefaultAsync<int>(@"SELECT COUNT(*) FROM breakdown WHERE machine = @MachineName", new { MachineName = machineName });
+
+            return result > 0;
         }
     }
 }

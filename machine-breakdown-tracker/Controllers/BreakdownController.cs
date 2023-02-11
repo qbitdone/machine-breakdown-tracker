@@ -21,15 +21,27 @@ namespace machine_breakdown_tracker.Controllers
         [HttpPost]
         public async Task<ActionResult<bool>> AddBreakdown([FromBody] BreakdownRequest breakdown)
         {
-            if (await _breakdownService.AddBreakdown(breakdown))
+            try
             {
-                return Ok("You have successfully added new breakdown!");
+                if (await _breakdownService.AddBreakdown(breakdown))
+                {
+                    return Created("api/breakdown", breakdown);
+                }
+
+                return NoContent();
             }
-            else
+
+            catch (ArgumentException ex)
             {
-                return BadRequest("Failed to add breakdown. One or more required fields are missing or have invalid values.");
+                return BadRequest(ex.Message);
+            }
+
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
+
 
         [HttpPut("{breakdownId}")]
         public async Task<IActionResult> UpdateBreakdownById(Guid breakdownId, [FromBody] BreakdownRequest updatedBreakdown)
@@ -48,6 +60,11 @@ namespace machine_breakdown_tracker.Controllers
             }
 
             catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            catch (InvalidOperationException ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -76,7 +93,7 @@ namespace machine_breakdown_tracker.Controllers
             }
         }
 
-        [HttpGet("breakdowns")]
-        public async Task<ActionResult<List<Breakdown>>> GetBreakdowns(int limit, int offset) => await _breakdownService.GetPaginatedSortedBreakdowns(limit, offset);
+        [HttpGet("paginated")]
+        public async Task<ActionResult<IEnumerable<Breakdown>>> GetBreakdowns(int limit, int offset) => Ok(await _breakdownService.GetPaginatedSortedBreakdowns(limit, offset));
     }
 }
