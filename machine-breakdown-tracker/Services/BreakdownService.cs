@@ -40,7 +40,6 @@ namespace machine_breakdown_tracker.Services
 
             if (breakdown != default(Breakdown))
             {
-
                 var rowsAffected = await _connection.ExecuteAsync(@"UPDATE breakdown SET name = @Name, machine = @Machine, priority = @Priority, 
                 start_time = @StartTime, end_time = @EndTime, description = @Description, 
                 eliminated = @Eliminated WHERE id = @BreakdownId", new
@@ -64,5 +63,17 @@ namespace machine_breakdown_tracker.Services
         }
 
         public async Task<Breakdown> GetBreakdownById(Guid breakdownId) => await _connection.QueryFirstOrDefaultAsync<Breakdown>("SELECT * FROM breakdown WHERE id = @BreakdownId", new { BreakdownId = breakdownId });
+
+        public async Task<bool> DeleteBreakdownById(Guid breakdownId)
+        {
+            if (await GetBreakdownById(breakdownId) != default(Breakdown))
+            {
+               var rowsAffected = await _connection.ExecuteAsync("DELETE FROM breakdown WHERE id = @BreakdownId", new { BreakdownId = breakdownId });
+
+               return rowsAffected > 0;
+            }
+
+            return false;
+        }
     }
 }

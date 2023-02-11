@@ -41,5 +41,15 @@ namespace machine_breakdown_tracker.Controllers
 
             return Ok("Breakdown updated successfully");
         }
+
+        [HttpDelete("{breakdownId}")]
+        public async Task<ActionResult> DeleteBreakdownById(Guid breakdownId)
+        {
+            if (!await _breakdownService.DeleteBreakdownById(breakdownId))
+            {
+                return NotFound("Breakdown with provided id does not exist");
+            }
+            return Ok($"You have successfully deleted breakdown with id: {breakdownId}");
+        }
     }
 }
