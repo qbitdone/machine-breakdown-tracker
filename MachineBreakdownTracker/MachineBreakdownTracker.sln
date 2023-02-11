@@ -5,6 +5,8 @@ VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MachineBreakdownTracker", "MachineBreakdownTracker.csproj", "{0D1C4A1D-60EC-4C2D-858A-99F212E0ADDD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MachineBreakdownTrackerTests", "..\MachineBreakdownTrackerTests\MachineBreakdownTrackerTests.csproj", "{CC2DE2FA-B37C-4085-91CB-8F3312C072DC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{0D1C4A1D-60EC-4C2D-858A-99F212E0ADDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D1C4A1D-60EC-4C2D-858A-99F212E0ADDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D1C4A1D-60EC-4C2D-858A-99F212E0ADDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC2DE2FA-B37C-4085-91CB-8F3312C072DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC2DE2FA-B37C-4085-91CB-8F3312C072DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC2DE2FA-B37C-4085-91CB-8F3312C072DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC2DE2FA-B37C-4085-91CB-8F3312C072DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
